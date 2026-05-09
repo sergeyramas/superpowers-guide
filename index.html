@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Superpowers — методология для AI-агентов | гайд на русском</title>
+<meta name="description" content="14 поведенческих skills для Claude Code / Codex / Gemini, которые превращают агента в дисциплинированного инженера. Brainstorm → план → TDD → ship. Open-source MIT, гайд на русском." />
+<meta property="og:title" content="Superpowers — методология для AI-агентов" />
+<meta property="og:description" content="14 skills для Claude Code: автотриггеры на каждой фазе работы. Brainstorm → план → TDD → ship. Open-source." />
+<meta property="og:type" content="website" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🦸%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --bg-elev: #111114;
+    --bg-deep: #0d0a18;
+    --border: #1f1f24;
+    --text: #ededed;
+    --text-dim: #9b9ba3;
+    --text-faint: #5a5a63;
+    --accent: #7c4dff;
+    --accent-bright: #a78bff;
+    --lime: #d4ff3c;
+    --amber: #ff9f43;
+    --blue: #42a5f5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  code, .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,11,0.78);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0;
+  }
+  .logo {
+    font-weight: 700; font-size: 16px; letter-spacing: -0.015em;
+    text-decoration: none; color: inherit;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .logo .emoji { font-size: 18px; }
+  .logo span.acc { color: var(--accent); }
+  nav ul { display: flex; gap: 28px; list-style: none; }
+  nav ul a { color: var(--text-dim); text-decoration: none; font-size: 14px; transition: color .15s; }
+  nav ul a:hover { color: var(--text); }
+  .nav-actions { display: flex; gap: 10px; align-items: center; }
+  nav .cta {
+    font-size: 13px; padding: 9px 16px; border-radius: 8px;
+    background: var(--accent); color: #fff;
+    text-decoration: none; font-weight: 600;
+    transition: background .15s;
+  }
+  nav .cta:hover { background: var(--accent-bright); }
+  .hub-link {
+    font-size: 13px; padding: 8px 14px; border-radius: 8px;
+    color: var(--text-dim); text-decoration: none;
+    border: 1px solid var(--border); background: var(--bg-elev);
+    transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .hub-link:hover { color: var(--text); border-color: var(--text-faint); }
+  .hub-arrow { color: var(--accent); font-weight: 700; }
+  @media (max-width: 760px) {
+    nav ul { display: none; }
+    .hub-link { display: none; }
+  }
+
+  /* HERO */
+  .hero { padding: 120px 0 90px; position: relative; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(40% 60% at 30% 30%, rgba(124,77,255,0.10), transparent 70%),
+      radial-gradient(40% 60% at 80% 80%, rgba(212,255,60,0.04), transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    padding: 7px 14px; border-radius: 999px;
+    font-size: 12px; color: var(--text-dim);
+    margin-bottom: 32px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+  h1 {
+    font-size: clamp(40px, 6.4vw, 84px);
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    font-weight: 700;
+    margin-bottom: 28px;
+    max-width: 980px;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .subtitle {
+    font-size: clamp(17px, 1.6vw, 21px);
+    color: var(--text-dim);
+    max-width: 720px;
+    margin-bottom: 48px;
+    font-weight: 400;
+  }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    padding: 14px 22px; border-radius: 8px;
+    font-size: 15px; font-weight: 600; text-decoration: none;
+    transition: transform .15s, background .15s, border-color .15s;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-bright); }
+  .btn-ghost { color: var(--text); border: 1px solid var(--border); background: var(--bg-elev); }
+  .btn-ghost:hover { border-color: var(--text-dim); }
+
+  /* PROOF STRIP */
+  .proof {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 1px solid var(--border); border-radius: 14px;
+    margin-top: 80px; overflow: hidden;
+    background: var(--bg-elev);
+  }
+  .proof > div { padding: 24px 28px; border-right: 1px solid var(--border); }
+  .proof > div:last-child { border-right: 0; }
+  .proof .num { font-size: 36px; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 4px; line-height: 1; }
+  .proof .num span.a { color: var(--accent); }
+  .proof .lbl { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+  @media (max-width: 720px) {
+    .proof { grid-template-columns: repeat(2, 1fr); }
+    .proof > div:nth-child(2) { border-right: 0; }
+    .proof > div:nth-child(1), .proof > div:nth-child(2) { border-bottom: 1px solid var(--border); }
+  }
+
+  /* SECTIONS */
+  section { padding: 100px 0; border-top: 1px solid var(--border); }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  h2 {
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    margin-bottom: 24px;
+    max-width: 800px;
+  }
+  .lead {
+    font-size: 18px; color: var(--text-dim);
+    max-width: 720px; margin-bottom: 64px;
+  }
+
+  /* BEFORE/AFTER */
+  .compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--border); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+  }
+  .col {
+    background: var(--bg);
+    padding: 32px;
+  }
+  .col h3 {
+    font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    margin-bottom: 24px;
+  }
+  .col h3.bad { color: var(--text-faint); }
+  .col h3.good { color: var(--accent); }
+  .col ul { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .col li {
+    display: flex; gap: 12px; font-size: 14.5px;
+    color: var(--text-dim); line-height: 1.55;
+  }
+  .col .sym {
+    flex-shrink: 0; width: 18px; height: 18px;
+    border-radius: 50%; display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; margin-top: 1px;
+  }
+  .col .sym.bad { background: rgba(255,107,53,0.15); color: #ff7f50; }
+  .col .sym.good { background: rgba(124,77,255,0.18); color: var(--accent-bright); }
+  @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+
+  /* SKILLS — 4 phases */
+  .phases {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  .phase {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px;
+  }
+  .phase-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 18px;
+  }
+  .phase-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .phase[data-phase="1"] .phase-dot { background: var(--accent); }
+  .phase[data-phase="2"] .phase-dot { background: var(--lime); }
+  .phase[data-phase="3"] .phase-dot { background: var(--amber); }
+  .phase[data-phase="4"] .phase-dot { background: var(--blue); }
+  .phase-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .phase[data-phase="1"] .phase-name { color: var(--accent-bright); }
+  .phase[data-phase="2"] .phase-name { color: var(--lime); }
+  .phase[data-phase="3"] .phase-name { color: var(--amber); }
+  .phase[data-phase="4"] .phase-name { color: var(--blue); }
+  .skill-chip {
+    background: var(--bg); border: 1px solid var(--border);
+    padding: 10px 12px; border-radius: 8px;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--text);
+    transition: border-color .15s;
+  }
+  .skill-chip:hover { border-color: var(--text-dim); }
+  .skill-chip .sk-when {
+    display: block; font-family: 'Inter', sans-serif;
+    font-size: 11px; color: var(--text-faint); margin-top: 4px;
+    line-height: 1.4;
+  }
+  @media (max-width: 980px) { .phases { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .phases { grid-template-columns: 1fr; } }
+
+  /* INSTALL */
+  .install-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+  }
+  .install-tab {
+    padding: 10px 16px; border-radius: 8px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    font-size: 13px; color: var(--text-dim);
+    cursor: pointer; transition: all .15s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .install-tab:hover { color: var(--text); border-color: var(--text-faint); }
+  .install-tab.active {
+    border-color: var(--accent); color: var(--text);
+    background: rgba(124,77,255,0.08);
+  }
+  .terminal {
+    background: #050506; border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.85;
+    overflow-x: auto;
+  }
+  .terminal .c { color: var(--text-faint); }
+  .terminal .p { color: var(--accent); }
+  .terminal .cmd { color: var(--text); }
+  .install-block { display: none; }
+  .install-block.active { display: block; }
+
+  /* SCENARIOS */
+  .scenario {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 32px;
+    margin-bottom: 16px;
+  }
+  .scenario h3 {
+    font-size: 18px; margin-bottom: 18px;
+    letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .scenario h3 .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--accent);
+    background: rgba(124,77,255,0.12);
+    padding: 3px 9px; border-radius: 6px;
+  }
+  .dialog {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px; line-height: 1.85;
+    color: var(--text-dim);
+    background: var(--bg); border: 1px solid var(--border);
+    padding: 16px 20px; border-radius: 8px;
+    overflow-x: auto;
+  }
+  .dialog .you { color: var(--lime); font-weight: 600; }
+  .dialog .ai { color: var(--accent-bright); font-weight: 600; }
+  .dialog .skill { color: var(--amber); font-style: italic; }
+
+  /* FAQ */
+  details {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 24px; margin-bottom: 12px;
+    background: var(--bg-elev);
+    cursor: pointer;
+  }
+  details summary {
+    font-weight: 600; font-size: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    list-style: none;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: "+"; color: var(--accent); font-size: 22px; transition: transform .2s; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { margin-top: 14px; color: var(--text-dim); font-size: 15px; line-height: 1.65; }
+
+  /* CREDITS */
+  .credits {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    margin-top: 24px;
+  }
+  .credit-card {
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px;
+  }
+  .credit-card h4 {
+    font-size: 14px; margin-bottom: 8px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .credit-card p { color: var(--text-dim); font-size: 14px; margin-bottom: 12px; }
+  .credit-card a {
+    color: var(--text); text-decoration: none;
+    border-bottom: 1px dashed var(--text-faint);
+    transition: color .15s, border-color .15s;
+  }
+  .credit-card a:hover { color: var(--accent); border-color: var(--accent); }
+  @media (max-width: 720px) { .credits { grid-template-columns: 1fr; } }
+
+  /* FINAL CTA */
+  .final-cta {
+    text-align: center; padding: 110px 24px;
+    border-top: 1px solid var(--border);
+    background:
+      radial-gradient(60% 100% at 50% 50%, rgba(124,77,255,0.10), transparent);
+  }
+  .final-cta h2 { margin: 0 auto 24px; }
+  .final-cta p { color: var(--text-dim); max-width: 580px; margin: 0 auto 36px; font-size: 17px; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 60px 0 40px;
+    color: var(--text-faint); font-size: 13px;
+  }
+  footer .row {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 24px;
+  }
+  footer a { color: var(--text-dim); text-decoration: none; margin-left: 22px; }
+  footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container row">
+    <a href="https://sergeyramas.vercel.app" class="logo">
+      <span class="emoji">🦸</span>
+      <span>superpowers <span class="acc">·</span> guide</span>
+    </a>
+    <ul>
+      <li><a href="#why">Зачем</a></li>
+      <li><a href="#skills">14 skills</a></li>
+      <li><a href="#install">Установка</a></li>
+      <li><a href="#scenarios">Сценарии</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="https://sergeyramas.vercel.app" class="hub-link">
+        <span class="hub-arrow">←</span> ramas hub
+      </a>
+      <a class="cta" href="#install">Установить</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="badge"><span class="dot"></span> AI METHODOLOGY · MIT · 14 SKILLS</div>
+    <h1>14 поведенческих skills, которые превращают AI-агента в&nbsp;<em>дисциплинированного инженера</em>.</h1>
+    <p class="subtitle">
+      Дефолтный Claude Code пишет код сразу. Без брейнсторма, без плана, без TDD, без верификации. Superpowers — пакет, который автоматически триггерит правильное поведение на каждой фазе работы. Brainstorm → план → красно-зелёный TDD → ревью → ship. Open-source MIT.
+    </p>
+    <div class="hero-actions">
+      <a href="#install" class="btn btn-primary">Установить за 30 секунд →</a>
+      <a href="https://github.com/sergeyramas/superpowers-guide" target="_blank" class="btn btn-ghost">GitHub repo</a>
+    </div>
+
+    <div class="proof">
+      <div>
+        <div class="num"><span class="a">14</span></div>
+        <div class="lbl">Поведенческих skills</div>
+      </div>
+      <div>
+        <div class="num"><span class="a">$0</span></div>
+        <div class="lbl">Стоимость пакета</div>
+      </div>
+      <div>
+        <div class="num"><span class="a">0</span></div>
+        <div class="lbl">Конфига для активации</div>
+      </div>
+      <div>
+        <div class="num">~<span class="a">30</span><span style="font-size:.55em">сек</span></div>
+        <div class="lbl">Полная установка</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="why">
+  <div class="container">
+    <div class="eyebrow">Зачем</div>
+    <h2>Дефолтный агент — это junior без вкуса.<br/>Superpowers даёт ему дисциплину.</h2>
+    <p class="lead">
+      Без Superpowers Claude (или Codex, или Gemini) на запрос «сделай X» сразу пишет код. Спека формируется в голове, тестов нет, после ревью агент покорно соглашается со всеми правками. Результат — итерации, регрессии, переделки.
+    </p>
+
+    <div class="compare">
+      <div class="col">
+        <h3 class="bad">// До Superpowers</h3>
+        <ul>
+          <li><span class="sym bad">×</span><span>«сделай фичу» → агент сразу кодит без вопросов</span></li>
+          <li><span class="sym bad">×</span><span>Спека держится в голове, не на бумаге</span></li>
+          <li><span class="sym bad">×</span><span>Тесты — либо нет, либо после кода</span></li>
+          <li><span class="sym bad">×</span><span>Агент говорит «готово» без проверки</span></li>
+          <li><span class="sym bad">×</span><span>На ревью соглашается со всем (performative agreement)</span></li>
+          <li><span class="sym bad">×</span><span>1 задача = 1 длинная последовательная сессия</span></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3 class="good">// После Superpowers</h3>
+        <ul>
+          <li><span class="sym good">✓</span><span>Сначала уточняет, что именно ты хочешь</span></li>
+          <li><span class="sym good">✓</span><span>Чёткая спека, разбитая на читаемые куски</span></li>
+          <li><span class="sym good">✓</span><span>Жёсткая red/green TDD — тест обязан упасть до имплементации</span></li>
+          <li><span class="sym good">✓</span><span>verification-before-completion: evidence перед claim'ом</span></li>
+          <li><span class="sym good">✓</span><span>Ревью обрабатывается технически, с верификацией каждой правки</span></li>
+          <li><span class="sym good">✓</span><span>Параллельные сабагенты на независимые задачи</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="container">
+    <div class="eyebrow">14 skills, 4 фазы</div>
+    <h2>Skills срабатывают автоматически.<br/>Никакого конфига.</h2>
+    <p class="lead">
+      Каждый skill знает, на какой фазе работы он включается. Пользователь ничего не выбирает — агент сам определяет нужный skill по контексту запроса.
+    </p>
+
+    <div class="phases">
+
+      <div class="phase" data-phase="1">
+        <div class="phase-head">
+          <span class="phase-dot"></span>
+          <span class="phase-name">// Discovery</span>
+        </div>
+        <div class="skill-chip">
+          using-superpowers
+          <span class="sk-when">Авто на старте сессии. Учит агента, как искать и применять остальные skills.</span>
+        </div>
+        <div class="skill-chip">
+          brainstorming
+          <span class="sk-when">Перед любой creative-работой — сначала уточняет, что ты хочешь.</span>
+        </div>
+        <div class="skill-chip">
+          writing-plans
+          <span class="sk-when">Превращает спеку в план для junior'а без контекста и вкуса.</span>
+        </div>
+      </div>
+
+      <div class="phase" data-phase="2">
+        <div class="phase-head">
+          <span class="phase-dot"></span>
+          <span class="phase-name">// Execution</span>
+        </div>
+        <div class="skill-chip">
+          executing-plans
+          <span class="sk-when">Выполняет план в отдельной сессии с review-чекпоинтами.</span>
+        </div>
+        <div class="skill-chip">
+          subagent-driven-development
+          <span class="sk-when">Раздаёт задачи сабагентам в текущей сессии.</span>
+        </div>
+        <div class="skill-chip">
+          dispatching-parallel-agents
+          <span class="sk-when">Запускает 2+ независимые задачи параллельно вместо последовательно.</span>
+        </div>
+        <div class="skill-chip">
+          using-git-worktrees
+          <span class="sk-when">Изоляция feature-работы в worktree с safety-проверками.</span>
+        </div>
+      </div>
+
+      <div class="phase" data-phase="3">
+        <div class="phase-head">
+          <span class="phase-dot"></span>
+          <span class="phase-name">// Quality</span>
+        </div>
+        <div class="skill-chip">
+          test-driven-development
+          <span class="sk-when">Жёсткая red/green: тест обязан упасть до начала кода.</span>
+        </div>
+        <div class="skill-chip">
+          systematic-debugging
+          <span class="sk-when">Системный сбор фактов вместо гадания при баге.</span>
+        </div>
+        <div class="skill-chip">
+          verification-before-completion
+          <span class="sk-when">Прогоняет команды и подтверждает вывод перед claim'ом «готово».</span>
+        </div>
+      </div>
+
+      <div class="phase" data-phase="4">
+        <div class="phase-head">
+          <span class="phase-dot"></span>
+          <span class="phase-name">// Ship</span>
+        </div>
+        <div class="skill-chip">
+          requesting-code-review
+          <span class="sk-when">Запрашивает ревью перед merge.</span>
+        </div>
+        <div class="skill-chip">
+          receiving-code-review
+          <span class="sk-when">Технический rigor: верификация каждой правки, не performative.</span>
+        </div>
+        <div class="skill-chip">
+          finishing-a-development-branch
+          <span class="sk-when">Решает merge / PR / cleanup при готовых тестах.</span>
+        </div>
+        <div class="skill-chip">
+          writing-skills
+          <span class="sk-when">Создание / редактирование самих skills + проверка перед deploy.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="container">
+    <div class="eyebrow">Установка</div>
+    <h2>Один из четырёх способов.<br/>Самый простой — официальный marketplace.</h2>
+    <p class="lead">
+      Superpowers распространяется как plugin через несколько marketplace'ов. После установки агент сам подхватит skills — настраивать ничего не нужно.
+    </p>
+
+    <div class="install-tabs">
+      <button class="install-tab active" data-tab="official">Anthropic Official</button>
+      <button class="install-tab" data-tab="superpowers">Superpowers MP</button>
+      <button class="install-tab" data-tab="codex">OpenAI Codex</button>
+      <button class="install-tab" data-tab="gemini">Gemini CLI</button>
+    </div>
+
+    <div class="install-block active" data-tab="official">
+      <div class="terminal"><span class="c"># Самый стабильный путь — пакет проходит review Anthropic</span>
+<span class="p">claude&gt;</span> <span class="cmd">/plugin install superpowers@claude-plugins-official</span>
+
+<span class="c"># Готово. Skills подхватываются автоматически на старте.</span></div>
+    </div>
+
+    <div class="install-block" data-tab="superpowers">
+      <div class="terminal"><span class="c"># Свежие фичи раньше, чем в official marketplace</span>
+<span class="p">claude&gt;</span> <span class="cmd">/plugin marketplace add obra/superpowers-marketplace</span>
+<span class="p">claude&gt;</span> <span class="cmd">/plugin install superpowers@superpowers-marketplace</span></div>
+    </div>
+
+    <div class="install-block" data-tab="codex">
+      <div class="terminal"><span class="c"># В OpenAI Codex CLI</span>
+<span class="p">codex&gt;</span> <span class="cmd">/plugins</span>
+<span class="c"># Найти superpowers, установить</span></div>
+    </div>
+
+    <div class="install-block" data-tab="gemini">
+      <div class="terminal"><span class="c"># Gemini CLI поддерживает через extension</span>
+<span class="c"># см. gemini-extension.json в upstream-репо</span>
+<span class="p">$</span> <span class="cmd">gemini extensions install obra/superpowers-marketplace</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="scenarios">
+  <div class="container">
+    <div class="eyebrow">Сценарии</div>
+    <h2>Как это выглядит в реальном диалоге</h2>
+    <p class="lead">
+      Три типичные ситуации — landing page с нуля, баг в проде, четыре фичи параллельно. Видны конкретные skills, которые срабатывают.
+    </p>
+
+    <div class="scenario">
+      <h3><span class="num">A</span> Сделай мне новый landing page</h3>
+      <pre class="dialog"><span class="you">ВЫ:</span>    Сделай мне landing page для нашего продукта X.
+
+<span class="ai">CLAUDE:</span> <span class="skill">[триггер: brainstorming]</span>
+       Прежде чем писать код — давай разберёмся:
+         1. Кто целевая аудитория?
+         2. Какая главная боль?
+         3. Какие 3 ключевых преимущества?
+         4. Что должно произойти после клика на CTA?
+
+<span class="you">ВЫ:</span>    [отвечает]
+
+<span class="ai">CLAUDE:</span> <span class="skill">[триггер: writing-plans]</span>
+       План в 5 шагов:
+         1. Hero: пейн → решение → primary CTA
+         2. 3 преимущества с метриками
+         3. Social proof (тестимониалы)
+         4. FAQ
+         5. Final CTA + footer
+       Согласен начать с шага 1?
+
+<span class="you">ВЫ:</span>    Да.
+
+<span class="ai">CLAUDE:</span> <span class="skill">[триггер: TDD + executing-plans]</span>
+       Пишу падающий тест для CTA-ссылки. Запускаю → failed (ОК).
+       Имплементирую CTA-компонент. Тест зелёный.
+       <span class="skill">[триггер: verification-before-completion]</span>
+       Прогоняю build, lint, тесты — всё ОК. Шаг 1 готов.</pre>
+    </div>
+
+    <div class="scenario">
+      <h3><span class="num">B</span> У меня баг в проде</h3>
+      <pre class="dialog"><span class="you">ВЫ:</span>    Кнопка submit не работает в Safari.
+
+<span class="ai">CLAUDE:</span> <span class="skill">[триггер: systematic-debugging]</span>
+       Прежде чем гадать — соберу факты:
+         1. В каких версиях Safari? Mobile / Desktop?
+         2. Воспроизводится локально?
+         3. Что в console?
+         4. Какой последний коммит трогал submit?
+       Дай мне эту информацию — потом сформулирую гипотезу.</pre>
+    </div>
+
+    <div class="scenario">
+      <h3><span class="num">C</span> Реализуй 4 фичи параллельно</h3>
+      <pre class="dialog"><span class="you">ВЫ:</span>    Нужно: 1) добавить dark mode, 2) переделать footer,
+       3) починить SEO-теги, 4) добавить sitemap.
+
+<span class="ai">CLAUDE:</span> <span class="skill">[триггер: dispatching-parallel-agents]</span>
+       Эти 4 задачи независимы (нет shared state).
+       Запускаю 4 sub-agent'а параллельно, каждый в своём
+       worktree. Через ~15 минут получишь 4 готовых PR.</pre>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="eyebrow">FAQ</div>
+    <h2>Частые вопросы</h2>
+    <div style="margin-top: 40px;">
+      <details>
+        <summary>Это правда работает?</summary>
+        <p>Да. Автор Jesse Vincent (obra) использует это в продакшне. На моих personal-проектах Superpowers + кастомные skills экономят 30-50% времени за счёт меньшего числа итераций и переделок.</p>
+      </details>
+      <details>
+        <summary>Сжигает ли больше токенов?</summary>
+        <p>Чуть-чуть на старт (системный промпт растёт на ~5-10K токенов) и на brainstorming-фазу. Но компенсируется за счёт меньшего числа неудачных попыток и переделок. Net-эффект — экономия на средних/крупных задачах.</p>
+      </details>
+      <details>
+        <summary>Совместимо с моими собственными skills?</summary>
+        <p>Полностью. Superpowers — отдельный плагин с префиксом <code>superpowers:</code> (например, <code>superpowers:brainstorming</code>). Не конфликтует с твоими skills в <code>~/.claude/skills/</code>.</p>
+      </details>
+      <details>
+        <summary>Можно отключить отдельные skills?</summary>
+        <p>Да. Каждый skill — отдельный <code>SKILL.md</code>. Удалить или скопировать локально и редактировать триггеры.</p>
+      </details>
+      <details>
+        <summary>А если я не хочу brainstorming на каждый запрос?</summary>
+        <p>Skill срабатывает только на creative work (новые фичи / компоненты). Простые правки — не триггерятся. Если всё-таки слишком часто — отредактируй описание <code>brainstorming/SKILL.md</code>, чтобы триггер был уже.</p>
+      </details>
+      <details>
+        <summary>Это open-source?</summary>
+        <p>Полностью. <strong>MIT License.</strong> Можно форкать, модифицировать, использовать коммерчески. Этот гайд — тоже MIT.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="eyebrow">Кредиты</div>
+    <h2>Это гайд, а не форк</h2>
+    <p class="lead">
+      Сам Superpowers создан Jesse Vincent. Этот сайт — гайд на русском с моими комментариями. Если экосистема помогает — поддержите автора напрямую.
+    </p>
+
+    <div class="credits">
+      <div class="credit-card">
+        <h4>Upstream</h4>
+        <p>Open-source пакет создан <strong>Jesse Vincent (@obra)</strong>. MIT License.</p>
+        <p>
+          → <a href="https://github.com/obra/superpowers-marketplace" target="_blank">github.com/obra/superpowers-marketplace</a><br/>
+          → <a href="https://github.com/sponsors/obra" target="_blank">GitHub Sponsors — поддержать автора</a>
+        </p>
+      </div>
+      <div class="credit-card">
+        <h4>Этот гайд</h4>
+        <p>Русский гайд с диаграммами и примерами от <strong>Сергея Рамаса</strong>. Тоже MIT.</p>
+        <p>
+          → <a href="https://github.com/sergeyramas/superpowers-guide" target="_blank">github.com/sergeyramas/superpowers-guide</a><br/>
+          → <a href="https://sergeyramas.vercel.app" target="_blank">Хаб с другими решениями</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="final-cta">
+  <h2>Дисциплина за 30 секунд установки.<br/>Без подписок и конфигов.</h2>
+  <p>14 skills, которые работают автоматически на каждой фазе. Один <code>/plugin install</code> — и агент перестаёт быть junior'ом.</p>
+  <a href="#install" class="btn btn-primary">Установить →</a>
+</div>
+
+<footer>
+  <div class="container row">
+    <div>© 2026 sergeyramas. Гайд распространяется под MIT. Upstream Superpowers — MIT, автор: Jesse Vincent (obra).</div>
+    <div>
+      <a href="https://sergeyramas.vercel.app" target="_blank">ramas hub</a>
+      <a href="https://github.com/sergeyramas/superpowers-guide" target="_blank">этот гайд</a>
+      <a href="https://github.com/obra/superpowers-marketplace" target="_blank">upstream</a>
+      <a href="https://github.com/sponsors/obra" target="_blank">поддержать</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Install tabs
+  const tabs = document.querySelectorAll('.install-tab');
+  const blocks = document.querySelectorAll('.install-block');
+  tabs.forEach(t => {
+    t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.remove('active'));
+      blocks.forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const target = document.querySelector(`.install-block[data-tab="${t.dataset.tab}"]`);
+      if (target) target.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
